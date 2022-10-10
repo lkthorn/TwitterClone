@@ -38,10 +38,16 @@ router.post("/", async (req, res, next) => {
         });
 
         if (user == null) {
-            //no user found
+            // no user found - can add a new user 
+            var data = req.body;
+            // hash password
+            User.create(data)
+            .then((user)=> {
+                console.log(user);
+            })
         }
         else{
-            //user found already
+            // user found already
             if (email == user.email) {
                 payload.errorMessage = "Email already in use.";
             }
