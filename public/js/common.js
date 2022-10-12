@@ -23,8 +23,18 @@ $("#submitPostButton").click(event => {
         content: textbox.val()
     }
 
-    $.post("/api/postsApi", data, (postData, status, xhr) => {
-        console.log(postData);
+    $.post("/api/postsApi", data, postData => {
+        
+        var html = createPostHtml(postData);
+        $(".postsContainer").prepend(html);
+        textbox.val("");
+        button.prop("disabled", true);
+        
     })
 
 })
+
+function createPostHtml(postData) {
+    return postData.content;
+
+}
