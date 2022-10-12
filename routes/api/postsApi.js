@@ -3,6 +3,7 @@ const app = express();
 const router = express.Router();
 const bodyParser = require("body-parser");
 const User = require('../../schemas/UserSchema');
+const Post = require('../../schemas/PostSchema');
 
 app.use(bodyParser.urlencoded({ extended: false }));
 
@@ -18,10 +19,21 @@ router.post("/", async (req, res, next) => {
         return res.sendStatus(400);
     }
 
-    
+    var postData = {
+        content: req.body.content,
+        postedBy: req.session.user
+    }
+    Post.create(postData)
+    .then(async newPost => {
 
+        newPost = await User.populate(newPost, { path: "postedBy" })
+        res.status(201).send(newPost);
+    })
 
-    res.status(200).send("Worked!");
+    .catch(error => {
+        console.log(error);
+        res.sendStatus(400);
+    })
 })
     
 module.exports = router;
