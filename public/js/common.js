@@ -35,6 +35,51 @@ $("#submitPostButton").click(event => {
 })
 
 function createPostHtml(postData) {
-    return postData.content;
+    
+    var postedBy = postData.postedBy;
+    var fullName = postedBy.firstName + " " + postedBy.lastName;
+    var timestamp = postData.createdAt;
+    
+    
+    return `<div class='post'>
+        <div class='mainContentContainer'>
+            <div class='userImageContainer'>
+                <img src='${postedBy.profilePic}'>
+            </div>
+
+            <div class='postContentContainer'>
+                <div class='header'>
+                    <a href='/profile/${postedBy.username}'class='fullName'>${fullName}</a>
+                    <span class='username'>@${postedBy.username}</span>
+                    <span class='date'>${timestamp}</span>
+                </div>
+                <div class='postBody'>
+                    <span>${postData.content}</span>
+                </div>
+                <div class='postFooter'>
+                    <div class='postButtonContainer'>
+                    <button>
+                        <i class='fa-regular fa-comment-dots'></i>
+                    </button>
+                    </div>
+                    <div class='postButtonContainer'>
+                    <button>
+                        <i class='fa-solid fa-retweet'></i>
+                    </button>
+                    </div>
+                    <div class='postButtonContainer'>
+                    <button>
+                        <i class='fa-regular fa-heart'></i>
+                    </button>
+                    </div>
+
+
+                </div>
+
+            </div>
+
+        </div>
+    
+    </div>`;
 
 }
