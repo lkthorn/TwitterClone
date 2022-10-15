@@ -1,5 +1,5 @@
 $(document).ready(()=> {
-    $.get("/api/postsApi", results => {
+    $.get("/api/posts", results => {
         outputPosts(results, $(".postsContainer"))
 })
 })
