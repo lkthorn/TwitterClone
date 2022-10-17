@@ -1,21 +1,20 @@
-// Code to reuse in other pages
-
 $("#postTextarea").keyup(event => {
     var textbox = $(event.target);
     var value = textbox.val().trim();
-
+    
     var submitButton = $("#submitPostButton");
 
-    if (submitButton.length == 0) return alert("No submit button found");
-    
+    if(submitButton.length == 0) return alert("No submit button found");
+
     if (value == "") {
         submitButton.prop("disabled", true);
         return;
     }
+
     submitButton.prop("disabled", false);
 })
 
-$("#submitPostButton").click(event => {
+$("#submitPostButton").click((event) => {
     var button = $(event.target);
     var textbox = $("#postTextarea");
 
@@ -23,65 +22,90 @@ $("#submitPostButton").click(event => {
         content: textbox.val()
     }
 
-    $.post("/api/postsApi", data, postData => {
+    $.post("/api/posts", data, postData => {
         
         var html = createPostHtml(postData);
         $(".postsContainer").prepend(html);
         textbox.val("");
         button.prop("disabled", true);
-        
     })
-
 })
+
+$(document).on("click", ".likeButton", (event) => {
+    var button = $(event.target);
+    var postId = getPostIdFromElement(button);
+    
+    if(postId === undefined) {
+        return;
+    }
+
+    $.ajax({
+        url: `/api/posts/${postId}/like`,
+        type: "PUT",
+        success: (postData) => {
+            console.log(postData);
+        }
+    })
+    
+})
+
+function getPostIdFromElement(element) {
+    var isRoot = element.hasClass("post");
+    var rootElement = isRoot == true ? element : element.closest(".post");
+    var postId = rootElement.data().id;
+
+    if (postId === undefined) return alert("post id undefined");
+
+    return postId;
+}
 
 function createPostHtml(postData) {
     
-    var postedBy = postData.postedBy; 
+    var postedBy = postData.postedBy;
+
+    if(postedBy._id === undefined) {
+        return console.log("User object not populated");
+    }
+
+
     var fullName = postedBy.firstName + " " + postedBy.lastName;
     var timestamp = timeDifference(new Date(), new Date(postData.createdAt));
-    
-    
-    return `<div class='post'>
-        <div class='mainContentContainer'>
-            <div class='userImageContainer'>
-                <img src='${postedBy.profilePic}'>
-            </div>
 
-            <div class='postContentContainer'>
-                <div class='header'>
-                    <a href='/profile/${postedBy.username}'class='fullName'>${fullName}</a>
-                    <span class='username'>@${postedBy.username}</span>
-                    <span class='date'>${timestamp}</span>
-                </div>
-                <div class='postBody'>
-                    <span>${postData.content}</span>
-                </div>
-                <div class='postFooter'>
-                    <div class='postButtonContainer'>
-                    <button>
-                        <i class='fa-regular fa-comment-dots'></i>
-                    </button>
+    return `<div class='post'data-id='${postData._id}'>
+
+                <div class='mainContentContainer'>
+                    <div class='userImageContainer'>
+                        <img src='${postedBy.profilePic}'>
                     </div>
-                    <div class='postButtonContainer'>
-                    <button>
-                        <i class='fa-solid fa-retweet'></i>
-                    </button>
+                    <div class='postContentContainer'>
+                        <div class='header'>
+                            <a href='/profile/${postedBy.username}' class='fullName'>${fullName}</a>
+                            <span class='username'>@${postedBy.username}</span>
+                            <span class='date'>${timestamp}</span>
+                        </div>
+                        <div class='postBody'>
+                            <span>${postData.content}</span>
+                        </div>
+                        <div class='postFooter'>
+                            <div class='postButtonContainer'>
+                                <button>
+                                    <i class='far fa-comment'></i>
+                                </button>
+                            </div>
+                            <div class='postButtonContainer'>
+                                <button>
+                                    <i class='fas fa-retweet'></i>
+                                </button>
+                            </div>
+                            <div class='postButtonContainer'>
+                                <button class="likeButton">
+                                    <i class='far fa-heart'></i>
+                                </button>
+                            </div>
+                        </div>
                     </div>
-                    <div class='postButtonContainer'>
-                    <button>
-                        <i class='fa-regular fa-heart'></i>
-                    </button>
-                    </div>
-
-
                 </div>
-
-            </div>
-
-        </div>
-    
-    </div>`;
-
+            </div>`;
 }
 
 function timeDifference(current, previous) {
@@ -95,10 +119,9 @@ function timeDifference(current, previous) {
     var elapsed = current - previous;
 
     if (elapsed < msPerMinute) {
-        if(elapsed/1000 <30) {
-            return "Just now"
-        }
-         return Math.round(elapsed/1000) + ' seconds ago';   
+        if(elapsed/1000 < 30) return "Just now";
+
+        return Math.round(elapsed/1000) + ' seconds ago';   
     }
 
     else if (elapsed < msPerHour) {
