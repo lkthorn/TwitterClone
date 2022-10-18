@@ -70,4 +70,55 @@ router.put("/:id/like", async (req, res, next) => {
     res.status(200).send(post);    
 })
 
+router.post("/:id/retweet", async (req, res, next) => {
+
+    var postId = req.params.id;
+    var userId = req.session.user._id;
+
+    var deletedPost = await Post.findOneAndDelete({ postedBy: userId, retweetData: postId })
+    .catch(error => {
+        console.log(error);
+        res.sendStatus(400);
+    })
+
+    
+
+    var option = deletedPost !=null ? "$pull" : "$addToSet";
+
+    var repost = deletedPost;
+
+    if (repost == null) {
+        repost = await Post.create({ postedBy: userId, retweetData: postId })
+        .catch(error => {
+            console.log(error);
+            res.sendStatus(400);
+        })
+    }
+    
+    req.session.user = await User.findByIdAndUpdate(userId, { [option]: { retweets: repost._id } }, { new: true })
+    .catch(error => {
+        console.log(error);
+        res.sendStatus(400);
+    })
+    
+    
+    // User like/unlike with condition variable option
+    req.session.user = await User.findByIdAndUpdate(userId, { [option]: { likes: postId } }, { new: true })
+    .catch(error => {
+        console.log(error);
+        res.sendStatus(400);
+    })
+
+
+    // Post like
+
+    var post = await Post.findByIdAndUpdate(postId, { [option]: { retweetUsers: userId } }, { new: true })
+    .catch(error => {
+        console.log(error);
+        res.sendStatus(400);
+    })
+
+    res.status(200).send(post);    
+})
+
 module.exports = router;

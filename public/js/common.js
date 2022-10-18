@@ -55,6 +55,30 @@ $(document).on("click", ".likeButton", (event) => {
     
 })
 
+$(document).on("click", ".retweetButton", (event) => {
+    var button = $(event.target);
+    var postId = getPostIdFromElement(button);
+    
+    if(postId === undefined) return;
+
+    $.ajax({
+        url: `/api/posts/${postId}/retweet`,
+        type: "POST",
+        success: (postData) => {
+                        
+            button.find("span").text(postData.retweetUsers.length || "");
+
+            if(postData.retweetUsers.includes(userLoggedIn._id)) {
+                button.addClass("active");
+            }
+            else {
+                button.removeClass("active");
+            }
+        }
+    })
+    
+})
+
 function getPostIdFromElement(element) {
     var isRoot = element.hasClass("post");
     var rootElement = isRoot == true ? element : element.closest(".post");
@@ -78,7 +102,8 @@ function createPostHtml(postData) {
     var timestamp = timeDifference(new Date(), new Date(postData.createdAt));
 
     var likeButtonActiveClass = postData.likes.includes(userLoggedIn._id) ? "active": "";
-
+    var retweetButtonActiveClass = postData.retweetUsers.includes(userLoggedIn._id) ? "active": "";
+    
     return `<div class='post'data-id='${postData._id}'>
 
                 <div class='mainContentContainer'>
@@ -101,8 +126,9 @@ function createPostHtml(postData) {
                                 </button>
                             </div>
                             <div class='postButtonContainer green'>
-                                <button class='retweet'>
+                                <button class='retweetButton ${retweetButtonActiveClass}'>
                                     <i class='fas fa-retweet'></i>
+                                    <span>${postData.retweetUsers.length || ""}</span>
                                 </button>
                             </div>
                             <div class='postButtonContainer red'>

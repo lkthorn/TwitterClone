@@ -6,7 +6,10 @@
   --hoverBlue: #d4edff;
   --greyText: rgb(101, 119, 134);
   --greyButtonText: rgb(0, 0, 0, 0.35);
-  --redLike: rgb(226, 34, 94);
+  --redLikeButton: rgb(226, 34, 94);
+  --redLikeBackground: rgb(226, 34, 94, 0.1);
+  --greenRetweetButton: rgb(6, 185, 14);
+  --greenBackground: rgb(6, 185, 14, 0.1);
 
   --spacing: 15px;
 }
@@ -192,6 +195,19 @@ button span {
 }
 
 .postButtonContainer.red button.active {
-  color: var(--redLike);
+  color: var(--redLikeButton);
 }
 
+.postButtonContainer.red button:hover {
+  color: var(--redLikeButton);
+  background-color: var(--redLikeBackground);
+}
+
+.postButtonContainer.green button.active {
+  color: var(--greenRetweetButton);
+}
+
+.postButtonContainer.green button:hover {
+  color: var(--greenRetweetButton);
+  background-color: var(--greenBackground);
+}
