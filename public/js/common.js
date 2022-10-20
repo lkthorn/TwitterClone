@@ -1,8 +1,10 @@
-$("#postTextarea").keyup(event => {
+$("#postTextarea, #replyTextarea").keyup(event => {
     var textbox = $(event.target);
     var value = textbox.val().trim();
+
+    var isModal = textbox.parents(".modal").length == 1;
     
-    var submitButton = $("#submitPostButton");
+    var submitButton = isModal ? $("#submitReplyButton") : $("#submitPostButton");
 
     if(submitButton.length == 0) return alert("No submit button found");
 
@@ -29,6 +31,15 @@ $("#submitPostButton").click(() => {
         textbox.val("");
         button.prop("disabled", true);
     })
+})
+
+$("#replyModal").on("show.bs.modal", (event) => {
+    var button = $(event.relatedTarget);
+    var postId = getPostIdFromElement(button);
+
+    $.get("/api/posts/" + postId, results => {
+        outputPosts(results, $("#originalPostContainer"));
+      }) 
 })
 
 $(document).on("click", ".likeButton", (event) => {
@@ -194,5 +205,22 @@ function timeDifference(current, previous) {
 
     else {
         return Math.round(elapsed/msPerYear ) + ' years ago';   
+    }
+}
+
+function outputPosts(results, container) {
+    container.html("");
+
+    if(!Array.isArray(results)) {
+        results = [results];
+    }
+
+    results.forEach(result => {
+        var html = createPostHtml(result)
+        container.append(html);
+    });
+
+    if (results.lenght == 0) {
+        container.append("<span class='noResults'>Nothing to show yet.</span>")
     }
 }

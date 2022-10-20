@@ -1,24 +1,27 @@
 mixin createPostForm(userLoggedIn)
-    .postFormContainer  
-        .userImageContainer 
+    .postFormContainer
+        .userImageContainer
             img(src=userLoggedIn.profilePic, alt="User's profile picture")
-        .textareaContainer 
-            textarea#postTextarea(placeholder="Write something")
-            .buttonsContainer   
+        .textareaContainer
+            textarea#postTextarea(placeholder="What's happening?")
+            .buttonsContainer
                 button#submitPostButton(disabled="") Post
 
-
-
 mixin createReplyModal(userLoggedIn)
-    #replyModal.modal.fade(tabindex='-1', role='dialog', aria-labelledby='replyModalTitle', aria-hidden='true')
-        .modal-dialog.modal-dialog-centered(role='document')
+    #replyModal.modal.fade(tabindex='-1', role='dialog', aria-labelledby='replyModalLabel', aria-hidden='true')
+        .modal-dialog(role='document')
             .modal-content
                 .modal-header
-                    h5#replyModalTitle.modal-title Reply
+                    h5#replyModalLabel.modal-title Reply
                     button.close(type='button', data-dismiss='modal', aria-label='Close')
                     span(aria-hidden='true') &times;
                 .modal-body
-                    | ...
+                    #originalPostContainer
+                    .postFormContainer
+                        .userImageContainer
+                            img(src=userLoggedIn.profilePic, alt="User's profile picture")
+                        .textareaContainer
+                            textarea#replyTextarea(placeholder="What's happening?")
                 .modal-footer
                     button.btn.btn-secondary(type='button', data-dismiss='modal') Close
                     button#submitReplyButton.btn.btn-primary(type='button', disabled="") Reply
