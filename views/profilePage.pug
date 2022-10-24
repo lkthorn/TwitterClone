@@ -1,0 +1,18 @@
+extends layouts/main-layout.pug
+
+block content   
+    if !profileUser
+        span.errorMessage Check the username you are trying to access.
+    else
+        .profileHeaderContainer
+            .coverPhotoContainer
+
+                .userImageContainer 
+                    img(src=profileUser.profilePic, alt="User profile image")
+
+        .postsContainer
+
+        +createPostModals(userLoggedIn)
+
+block scripts   
+    script(src="/js/profilePage.js") 

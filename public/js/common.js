@@ -64,8 +64,16 @@ $("#deletePostModal").on("show.bs.modal", (event) => {
     $("#deletePostButton").data("id", postId);
 })
 
-$("#deletePostButton").click(()=>{
-    alert("clicked");
+$("#deletePostButton").click((event)=> {
+    var postId = $(event.target).data("id");
+
+    $.ajax({
+        url: `/api/posts/${postId}`,
+        type: "DELETE",
+        success: () => {
+            location.reload();    
+        }        
+    })
 })
 
 $(document).on("click", ".likeButton", (event) => {
@@ -102,6 +110,7 @@ $(document).on("click", ".retweetButton", (event) => {
     $.ajax({
         url: `/api/posts/${postId}/retweet`,
         type: "POST",
+        contenttype: text/javascript,
         success: (postData) => {            
             button.find("span").text(postData.retweetUsers.length || "");
 
@@ -122,7 +131,7 @@ $(document).on("click", ".post", (event) => {
     var postId = getPostIdFromElement(element);
 
     if(postId !== undefined && !element.is("button")) {
-        window.location.href = '/posts/' + postId;
+        window.location.href = `/posts/${postId}`;
     }
 });
 
@@ -186,7 +195,7 @@ function createPostHtml(postData, largeFont = false) {
     if (postData.postedBy._id == userLoggedIn._id) {
         buttons = `<button data-id="${postData._id}" data-toggle="modal" data-target="#deletePostModal"><i class='fas fa-times'></i></button>`;
     }
-
+    
     return `<div class='post ${largeFontClass}' data-id='${postData._id}'>
                 <div class='postActionContainer'>
                     ${retweetText}
@@ -205,6 +214,7 @@ function createPostHtml(postData, largeFont = false) {
                         ${replyFlag}
                         <div class='postBody'>
                             <span>${postData.content}</span>
+                            
                         </div>
                         <div class='postFooter'>
                             <div class='postButtonContainer'>
@@ -228,6 +238,7 @@ function createPostHtml(postData, largeFont = false) {
                     </div>
                 </div>
             </div>`;
+            
 }
 
 function timeDifference(current, previous) {
@@ -294,7 +305,7 @@ function outputPostsWithReplies(results, container) {
 
     var mainPostHtml = createPostHtml(results.postData, true)
     container.append(mainPostHtml);
-
+    
     results.replies.forEach(result => {
         var html = createPostHtml(result)
         container.append(html);

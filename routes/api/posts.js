@@ -15,9 +15,10 @@ router.get("/", async (req, res, next) => {
 router.get("/:id", async (req, res, next) => {
 
     var postId = req.params.id;
+    console.log(postId);
 
     var postData = await getPosts({ _id: postId });
-    postData = results[0];
+    
 
     var results = {
         postData: postData
@@ -33,7 +34,7 @@ router.get("/:id", async (req, res, next) => {
 
 })
 
-router.post("/", async (req, res, next) => {
+router.post("/", (req, res, next) => {
     if (!req.body.content) {
         console.log("Content param not sent with request");
         return res.sendStatus(400);
@@ -127,6 +128,15 @@ router.post("/:id/retweet", async (req, res, next) => {
 
 
     res.status(200).send(post)
+})
+
+router.delete("/:id", (req, res, next) =>{
+    Post.findByIdAndDelete(req.params.id)
+    .then(() => res.sendStatus(202))
+    .catch (error => {
+        console.log(error);
+        res.sendStatus(400);
+    })
 })
 
 async function getPosts(filter) {
