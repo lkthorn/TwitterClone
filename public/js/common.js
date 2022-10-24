@@ -110,7 +110,6 @@ $(document).on("click", ".retweetButton", (event) => {
     $.ajax({
         url: `/api/posts/${postId}/retweet`,
         type: "POST",
-        contenttype: text/javascript,
         success: (postData) => {            
             button.find("span").text(postData.retweetUsers.length || "");
 
