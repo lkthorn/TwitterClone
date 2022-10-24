@@ -18,7 +18,7 @@ router.get("/:id", async (req, res, next) => {
     console.log(postId);
 
     var postData = await getPosts({ _id: postId });
-    
+    postData = results[0]
 
     var results = {
         postData: postData
