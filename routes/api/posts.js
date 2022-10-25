@@ -13,7 +13,7 @@ router.get("/", async (req, res, next) => {
     if(searchObj.isReply !== undefined) {
         var isReply = searchObj.isReply == "true";
         searchObj.replyTo = { $exists: isReply };
-        delete searchObj.isReply;
+        delete searchObj.isReply;        
     }
    
     var results = await getPosts(searchObj);
@@ -26,7 +26,7 @@ router.get("/:id", async (req, res, next) => {
     console.log(postId);
 
     var postData = await getPosts({ _id: postId });
-    postData = results[0]
+    postData = postData[0]
 
     var results = {
         postData: postData
