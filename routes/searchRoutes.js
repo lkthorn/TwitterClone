@@ -7,7 +7,7 @@ const User = require('../schemas/UserSchema');
 
 router.get("/", (req, res, next) => {
 
-    var payload = createPayload();    
+    var payload = createPayload(req.session.user);    
     res.status(200).render("searchPage", payload);
 })
 
@@ -18,11 +18,11 @@ router.get("/:selectedTab", (req, res, next) => {
     res.status(200).render("searchPage", payload);
 })
 
-function createPayload() {
+function createPayload(userLoggedIn) {
     return {
         pageTitle: "Search", 
-        userLoggedIn: req.session.user, 
-        userLoggedInJs: JSON.stringify(req.session.user)
+        userLoggedIn: userLoggedIn, 
+        userLoggedInJs: JSON.stringify(userLoggedIn)
     };
 }
 

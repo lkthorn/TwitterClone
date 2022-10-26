@@ -1,3 +1,5 @@
+var cropper;
+
 $("#postTextarea, #replyTextarea").keyup(event => {
     var textbox = $(event.target);
     var value = textbox.val().trim();
@@ -73,6 +75,40 @@ $("#deletePostButton").click((event)=> {
         success: () => {
             location.reload();    
         }        
+    })
+})
+
+$("#filePhoto").change(function(){      
+    if(this.files && this.files[0]) {
+        var reader = new FileReader();
+        reader.onload = (e) => {
+            var image = document.getElementById("imagePreview");
+            image.src = e.target.result;          
+
+            if(cropper !== undefined) {
+                cropper.destroy();
+            }
+            cropper = new Cropper(image, {
+                aspectRatio: 1/1,
+                background:false
+            });
+            
+        }
+        reader.readAsDataURL(this.files[0]);
+    }
+})
+
+$("#imageUploadButton").click(()=>{
+    var canvas = cropper.getCroppedCanvas();
+    if(canvas == null) {
+        alert("Could not upload image");
+        return;
+    }
+    canvas.toBlob((blob)=> {
+        var formData = new FormData();
+        formData.append("croppedImage", blob);
+        console.log(formData);
+
     })
 })
 
