@@ -8,14 +8,28 @@ const Post = require('../../schemas/PostSchema');
 app.use(bodyParser.urlencoded({ extended: false }));
 
 router.get("/", async (req, res, next) => {
-    var searchObj = req.query;
 
+    var searchObj = req.query;
+    
     if(searchObj.isReply !== undefined) {
         var isReply = searchObj.isReply == "true";
         searchObj.replyTo = { $exists: isReply };
-        delete searchObj.isReply;        
+        delete searchObj.isReply;
     }
-   
+
+    if(searchObj.followingOnly !== undefined) {
+        var followingOnly = searchObj.followingOnly == "true";
+
+        if(followingOnly) {
+            var objectIds = req.session.user.following;
+
+            objectIds.push(req.session.user._id);
+            searchObj.postedBy = { $in: objectIds };
+        }
+        
+        delete searchObj.followingOnly;
+    }
+
     var results = await getPosts(searchObj);
     res.status(200).send(results);
 })
@@ -23,10 +37,9 @@ router.get("/", async (req, res, next) => {
 router.get("/:id", async (req, res, next) => {
 
     var postId = req.params.id;
-    console.log(postId);
 
     var postData = await getPosts({ _id: postId });
-    postData = postData[0]
+    postData = postData[0];
 
     var results = {
         postData: postData
@@ -35,14 +48,13 @@ router.get("/:id", async (req, res, next) => {
     if(postData.replyTo !== undefined) {
         results.replyTo = postData.replyTo;
     }
-    
+
     results.replies = await getPosts({ replyTo: postId });
 
     res.status(200).send(results);
-
 })
 
-router.post("/", (req, res, next) => {
+router.post("/", async (req, res, next) => {
     if (!req.body.content) {
         console.log("Content param not sent with request");
         return res.sendStatus(400);
@@ -138,10 +150,10 @@ router.post("/:id/retweet", async (req, res, next) => {
     res.status(200).send(post)
 })
 
-router.delete("/:id", (req, res, next) =>{
+router.delete("/:id", (req, res, next) => {
     Post.findByIdAndDelete(req.params.id)
     .then(() => res.sendStatus(202))
-    .catch (error => {
+    .catch(error => {
         console.log(error);
         res.sendStatus(400);
     })
