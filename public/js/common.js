@@ -107,8 +107,15 @@ $("#imageUploadButton").click(()=>{
     canvas.toBlob((blob)=> {
         var formData = new FormData();
         formData.append("croppedImage", blob);
-        console.log(formData);
 
+        $.ajax({
+            url: "/api/users/profilePicture",
+            type: "POST",
+            data: formData,
+            processData: false,
+            processType: false,
+            success: () => location.reload()
+        })
     })
 })
 
