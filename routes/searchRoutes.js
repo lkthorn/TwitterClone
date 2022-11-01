@@ -12,18 +12,16 @@ router.get("/", (req, res, next) => {
 })
 
 router.get("/:selectedTab", (req, res, next) => {
-
-    var payload = createPayload();    
-    payload.selectedTab = req.params.selectedTab;
+    var payload = createPayload(req.session.user);  
+    payload.selectedTab = req.params.selectedTab; 
     res.status(200).render("searchPage", payload);
 })
 
 function createPayload(userLoggedIn) {
     return {
-        pageTitle: "Search", 
-        userLoggedIn: userLoggedIn, 
-        userLoggedInJs: JSON.stringify(userLoggedIn)
-    };
+            pageTitle: "Search", 
+            userLoggedIn: userLoggedIn, 
+            userLoggedInJs: JSON.stringify(userLoggedIn)            
+        }
 }
-
 module.exports = router;
