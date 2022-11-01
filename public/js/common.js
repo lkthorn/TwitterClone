@@ -1,3 +1,4 @@
+// Globals
 var cropper;
 
 $("#postTextarea, #replyTextarea").keyup(event => {
@@ -66,52 +67,114 @@ $("#deletePostModal").on("show.bs.modal", (event) => {
     $("#deletePostButton").data("id", postId);
 })
 
-$("#deletePostButton").click((event)=> {
+$("#confirmPinModal").on("show.bs.modal", (event) => {
+    var button = $(event.relatedTarget);
+    var postId = getPostIdFromElement(button);
+    $("#pinPostButton").data("id", postId);
+})
+
+$("#unpinModal").on("show.bs.modal", (event) => {
+    var button = $(event.relatedTarget);
+    var postId = getPostIdFromElement(button);
+    $("#unpinPostButton").data("id", postId);
+})
+
+$("#deletePostButton").click((event) => {
     var postId = $(event.target).data("id");
 
     $.ajax({
         url: `/api/posts/${postId}`,
         type: "DELETE",
-        success: () => {
-            location.reload();    
-        }        
+        success: (data, status, xhr) => {
+
+            if(xhr.status != 202) {
+                alert("could not delete post");
+                return;
+            }
+            
+            location.reload();
+        }
     })
 })
 
-$("#filePhoto").change(function(){      
+$("#pinPostButton").click((event) => {
+    var postId = $(event.target).data("id");
+
+    $.ajax({
+        url: `/api/posts/${postId}`,
+        type: "PUT",
+        data: { pinned: true },
+        success: (data, status, xhr) => {
+
+            if(xhr.status != 204) {
+                alert("could not delete post");
+                return;
+            }
+            
+            location.reload();
+        }
+    })
+})
+
+$("#unpinPostButton").click((event) => {
+    var postId = $(event.target).data("id");
+
+    $.ajax({
+        url: `/api/posts/${postId}`,
+        type: "PUT",
+        data: { pinned: false },
+        success: (data, status, xhr) => {
+
+            if(xhr.status != 204) {
+                alert("could not delete post");
+                return;
+            }
+            
+            location.reload();
+        }
+    })
+})
+
+$("#filePhoto").change(function(){    
     if(this.files && this.files[0]) {
         var reader = new FileReader();
         reader.onload = (e) => {
             var image = document.getElementById("imagePreview");
-            image.src = e.target.result;          
+            image.src = e.target.result;
 
             if(cropper !== undefined) {
                 cropper.destroy();
             }
+
             cropper = new Cropper(image, {
-                aspectRatio: 1/1,
-                background:false
+                aspectRatio: 1 / 1,
+                background: false
             });
-            
+
         }
         reader.readAsDataURL(this.files[0]);
     }
+    else {
+        console.log("nope")
+    }
 })
 
-$("#coverPhoto").change(function(){      
+$("#coverPhoto").change(function(){    
     if(this.files && this.files[0]) {
         var reader = new FileReader();
         reader.onload = (e) => {
             var image = document.getElementById("coverPreview");
-            image.src = e.target.result;          
+            image.src = e.target.result;
 
             if(cropper !== undefined) {
                 cropper.destroy();
             }
+
             cropper = new Cropper(image, {
                 aspectRatio: 16 / 9,
-                background:false
-            });            
+                background: false
+            });
+
         }
         reader.readAsDataURL(this.files[0]);
     }
@@ -217,7 +280,7 @@ $(document).on("click", ".post", (event) => {
     var postId = getPostIdFromElement(element);
 
     if(postId !== undefined && !element.is("button")) {
-        window.location.href = `/posts/${postId}`;
+        window.location.href = '/posts/' + postId;
     }
 });
 
@@ -313,11 +376,21 @@ function createPostHtml(postData, largeFont = false) {
     }
 
     var buttons = "";
+    var pinnedPostText = "";
     if (postData.postedBy._id == userLoggedIn._id) {
-        buttons = `<button data-id="${postData._id}" data-toggle="modal" data-target="#confirmPinModal"><i class='fas fa-thumbtack'></i></button>
+
+        var pinnedClass = "";
+        var dataTarget = "#confirmPinModal";
+        if (postData.pinned === true) {
+            pinnedClass = "active";
+            dataTarget = "#unpinModal";
+            pinnedPostText = "<i class='fas fa-thumbtack'></i> <span>Pinned post</span>";
+        }
+
+        buttons = `<button class='pinButton ${pinnedClass}' data-id="${postData._id}" data-toggle="modal" data-target="${dataTarget}"><i class='fas fa-thumbtack'></i></button>
                     <button data-id="${postData._id}" data-toggle="modal" data-target="#deletePostModal"><i class='fas fa-times'></i></button>`;
     }
-    
+
     return `<div class='post ${largeFontClass}' data-id='${postData._id}'>
                 <div class='postActionContainer'>
                     ${retweetText}
@@ -327,6 +400,7 @@ function createPostHtml(postData, largeFont = false) {
                         <img src='${postedBy.profilePic}'>
                     </div>
                     <div class='postContentContainer'>
+                        <div class='pinnedPostText'>${pinnedPostText}</div>
                         <div class='header'>
                             <a href='/profile/${postedBy.username}' class='displayName'>${displayName}</a>
                             <span class='username'>@${postedBy.username}</span>
@@ -336,7 +410,6 @@ function createPostHtml(postData, largeFont = false) {
                         ${replyFlag}
                         <div class='postBody'>
                             <span>${postData.content}</span>
-                            
                         </div>
                         <div class='postFooter'>
                             <div class='postButtonContainer'>
@@ -360,7 +433,6 @@ function createPostHtml(postData, largeFont = false) {
                     </div>
                 </div>
             </div>`;
-            
 }
 
 function timeDifference(current, previous) {
@@ -427,7 +499,7 @@ function outputPostsWithReplies(results, container) {
 
     var mainPostHtml = createPostHtml(results.postData, true)
     container.append(mainPostHtml);
-    
+
     results.replies.forEach(result => {
         var html = createPostHtml(result)
         container.append(html);
