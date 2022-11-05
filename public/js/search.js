@@ -3,9 +3,27 @@ var timer;
 $("#searchBox").keydown((event) => {
     clearTimeout(timer);
     var textbox = $(event.target);
-    var value = textbox.value();
+    var value = textbox.val();
     var searchType = textbox.data().search;
 
-    console.log(value);
-    console.log(searchType);
+
+    timer = setTimeout(() => {
+        value = textbox.val().trim();
+        if(value == "") {
+            $(".resultsContainer").html("");
+        }
+        else{
+            search(value, searchType);          
+        }
+    }, 1000)
+    
 })
+
+function search(searchTerm, searchType) {
+    var url = searchType == "users" ? "/api/users" : "/api/posts"
+
+    $.get(url, { search: searchTerm }, (results) => {
+        console.log(results);
+    })
+
+}
